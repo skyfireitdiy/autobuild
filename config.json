@@ -1,0 +1,57 @@
+{
+  "env": {
+  },
+  "project": {
+    "SFCALC": {
+      "type": "local",
+      "vcs": {
+        "type": "git",
+        "username": "",
+        "password": "",
+        "addr": "https://gitee.com/skyfireitdiy/SFCALC"
+      },
+      "env": {
+        "VS2017_DIR": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise"
+      },
+      "build": [
+        "call \"{{VS2017_DIR}}\\VC\\Auxiliary\\Build\\vcvars32.bat\"",
+        "cd SFCALC",
+        "devenv SFCALC.sln /Build \"Release|Win32\"",
+        "copy Release\\SFCALC.exe {{_SLN_DIR}}\\SFCALC.exe"
+      ]
+    },
+    "SFCALC_linux": {
+      "type": "remote",
+      "ssh": {
+        "host": "{{SSH_HOST}}",
+        "port": "22",
+        "username": "{{SSH_USER_NAME}}",
+        "password": "{{SSH_PASSWORD}}"
+      },
+      "scp": [
+        {
+          "remote": "{{_PROJECT_DIR}}/SFCALC/SFCALC/SFCALC",
+          "local": "{{_SLN_DIR}}/SFCALC"
+        }
+      ],
+      "os": "Linux",
+      "vcs": {
+        "type": "git",
+        "username": "",
+        "password": "",
+        "addr": "https://gitee.com/skyfireitdiy/SFCALC"
+      },
+      "env": {
+        "SSH_HOST" : "192.168.6.177",
+        "SSH_USER_NAME" : "skyfire",
+        "SSH_PASSWORD" : "mn123nm1"
+      },
+      "build": [
+        "cd SFCALC/SFCALC",
+        "g++ -o SFCALC *.cpp -O2 -std=c++11 -Dsprintf_s=sprintf"
+      ]
+    }
+  },
+  "before": [],
+  "after": []
+}
