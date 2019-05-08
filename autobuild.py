@@ -48,18 +48,35 @@ def main():
         if "skip" in project_detail:
             build_result[project_name] = 1
             continue
+        if "before" in global_config:
+            before_command, _ = generate_script(global_config["before"], system_type)
+            ret = subprocess.call([before_command])
+            if ret != 0:
+                build_result[project_name] = -1
+                logger.error("prebuild project error")
+                continue
         if project_detail["type"] == "local":
             logger.info("local build %s ...", project_name)
             if local_build(project_detail):
                 build_result[project_name] = 0
             else:
                 build_result[project_name] = -1
+                continue
         else:
             logger.info("remote build %s ...", project_name)
             if remote_build(project_detail):
                 build_result[project_name] = 0
             else:
                 build_result[project_name] = -1
+                continue
+        if build_result[project_name] == 0:
+            if "after" in global_config:
+                before_command, _ = generate_script(global_config["after"], system_type)
+                ret = subprocess.call([before_command])
+                if ret != 0:
+                    build_result[project_name] = -1
+                    logger.error("postbuild project error")
+                    continue
 
     if "after" in global_config:
         before_command, _ = generate_script(global_config["after"], system_type)
