@@ -50,7 +50,7 @@ def local_build(project_config):
     logger.info("generate build command file ...")
     build_cmd, _ = generate_script(project_config["build"], system_type, prefix="build")
     logger.info("start build ...")
-    ret = subprocess.call([build_cmd], shell=True)
+    ret = subprocess.call([build_cmd])
     if ret != 0:
         logger.error("Build error")
         all_pop()
