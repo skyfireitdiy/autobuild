@@ -5,28 +5,36 @@ from jinja2 import Template
 from logger import logger
 
 
-def generate_script(command_list, system_type):
+def generate_script(command_list, system_type, remote=False, prefix=""):
     if system_type == "Windows":
         command = "@echo off\n"
-        if "_PROJECT_DIR" in os.environ:
+        if remote and "_PROJECT_DIR_REMOTE" in os.environ:
+            command += "cd \"" + os.environ["_PROJECT_DIR_REMOTE"] + "\"\n"
+        elif "_PROJECT_DIR" in os.environ:
             command += "cd \"" + os.environ["_PROJECT_DIR"] + "\"\n"
         for cmd in command_list:
             command += Template(cmd).render(os.environ) + "\n"
             command += "if not %errorlevel%==0 exit %errorlevel%\n"
-        cmd_file = uuid.uuid4().hex + ".bat"
-        if "_PROJECT_DIR" in os.environ:
+        cmd_file = prefix + "_" + uuid.uuid4().hex + ".bat"
+        if remote and "_PROJECT_DIR_REMOTE" in os.environ:
+            full_path = os.path.join(os.environ["_PROJECT_DIR_REMOTE"], cmd_file).replace("/", "\\")
+        elif "_PROJECT_DIR" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR"], cmd_file).replace("/", "\\")
         else:
             full_path = os.path.abspath(cmd_file).replace("/", "\\")
     else:
         command = "#!/bin/sh\n"
         command += "set -e\n"
-        if "_PROJECT_DIR" in os.environ:
+        if remote and "_PROJECT_DIR_REMOTE" in os.environ:
+            command += "cd \"" + os.environ["_PROJECT_DIR_REMOTE"] + "\"\n"
+        elif "_PROJECT_DIR" in os.environ:
             command += "cd \"" + os.environ["_PROJECT_DIR"] + "\"\n"
         for cmd in command_list:
             command += Template(cmd).render(os.environ) + "\n"
-        cmd_file = uuid.uuid4().hex + ".sh"
-        if "_PROJECT_DIR" in os.environ:
+        cmd_file = prefix + "_" + uuid.uuid4().hex + ".sh"
+        if remote and "_PROJECT_DIR_REMOTE" in os.environ:
+            full_path = os.path.join(os.environ["_PROJECT_DIR_REMOTE"], cmd_file).replace("\\", "/")
+        elif "_PROJECT_DIR" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR"], cmd_file).replace("\\", "/")
         else:
             full_path = os.path.abspath(cmd_file).replace("\\", "/")

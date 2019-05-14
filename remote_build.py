@@ -1,9 +1,10 @@
 import os
 import uuid
+import subprocess
 
 from jinja2 import Template
 
-from env import all_push, all_pop
+from env import all_push, all_pop, system_type
 from logger import logger
 from script_gen import generate_script
 from ssh import SSHClient
@@ -29,26 +30,42 @@ def remote_build(project_config):
         project_dir = project_dir.replace("\\", "/")
     else:
         project_dir = project_dir.replace("/", "\\")
-    os.environ["_PROJECT_DIR"] = project_dir
-    os.environ["_PROJECT_DIR_LOCAL"] = os.path.abspath(dir_name)
+    os.environ["_PROJECT_DIR_REMOTE"] = project_dir
+    os.environ["_PROJECT_DIR"] = os.path.abspath(dir_name)
     logger.info("project dir: %s", project_dir)
 
     os.makedirs(dir_name)
     os.chdir(dir_name)
     vcs_config = project_config["vcs"]
+
+    if "before" in project_config["vcs"]:
+        before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
+        ret = subprocess.call([before_command])
+        if ret != 0:
+            all_pop()
+            logger.error("pre get code error")
+            return False
+
     if not get_code(vcs_config):
         logger.error("get code error")
         all_pop()
         return False
 
+    if "after" in project_config["vcs"]:
+        after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
+        ret = subprocess.call([after_command])
+        if ret != 0:
+            all_pop()
+            logger.error("post get code error")
+            return False
+    logger.info("uploading project source ...")
     if not ssh_client.upload_file(os.path.join("..", dir_name), project_dir):
         logger.error("upload project source error: %s", os.path.join("..", dir_name))
         all_pop()
         return False
 
     logger.info("generate build command file ...")
-    build_cmd, local_file = generate_script(project_config["build"], project_config["os"])
-
+    build_cmd, local_file = generate_script(project_config["build"], project_config["os"], remote=True, prefix="build")
     if not ssh_client.upload_file(local_file, build_cmd):
         logger.error("upload build script error")
         all_pop()

@@ -22,12 +22,33 @@ def local_build(project_config):
     logger.info("project dir: %s", project_dir)
 
     vcs_config = project_config["vcs"]
-    if not get_code(vcs_config):
-        logger.error("get code error")
-        all_pop()
-        return False
+
+    if "skip" not in project_config["vcs"]:
+        if "before" in project_config["vcs"]:
+            before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
+            ret = subprocess.call([before_command])
+            if ret != 0:
+                all_pop()
+                logger.error("pre get code error")
+                return False
+
+        if not get_code(vcs_config):
+            logger.error("get code error")
+            all_pop()
+            return False
+
+        if "after" in project_config["vcs"]:
+            after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
+            ret = subprocess.call([after_command])
+            if ret != 0:
+                all_pop()
+                logger.error("post get code error")
+                return False
+    else:
+        logger.info("Skip get code ...")
+
     logger.info("generate build command file ...")
-    build_cmd, _ = generate_script(project_config["build"], system_type)
+    build_cmd, _ = generate_script(project_config["build"], system_type, prefix="build")
     logger.info("start build ...")
     ret = subprocess.call([build_cmd], shell=True)
     if ret != 0:
