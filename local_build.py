@@ -10,16 +10,20 @@ import subprocess
 
 def local_build(project_config):
     all_push()
+    project_dir = os.path.abspath(uuid.uuid4().hex)
+    if system_type == "Linux":
+        project_dir = project_dir.replace("\\", "/")
+    else:
+        project_dir = project_dir.replace("/", "\\")
+    os.makedirs(project_dir)
+    os.environ["_PROJECT_DIR"] = project_dir
+    os.chdir(project_dir)
+    logger.info("project dir: %s", project_dir)
     if "env" in project_config:
         for key, value in project_config["env"].items():
             real_value = Template(value).render(os.environ)
             os.environ[key] = real_value
             logger.info("set env: %s = %s", key, real_value)
-    project_dir = os.path.abspath(uuid.uuid4().hex)
-    os.makedirs(project_dir)
-    os.environ["_PROJECT_DIR"] = project_dir
-    os.chdir(project_dir)
-    logger.info("project dir: %s", project_dir)
 
     vcs_config = project_config["vcs"]
 

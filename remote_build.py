@@ -13,29 +13,35 @@ from vcs import get_code
 
 def remote_build(project_config):
     all_push()
-    if "env" in project_config:
-        for key, value in project_config["env"].items():
-            real_value = Template(value).render(os.environ)
-            os.environ[key] = real_value
-            logger.info("set env: %s = %s", key, real_value)
+    dir_name = uuid.uuid4().hex
+    project_dir = os.path.abspath(dir_name)
+    if system_type == "Linux":
+        project_dir = project_dir.replace("\\", "/")
+    else:
+        project_dir = project_dir.replace("/", "\\")
+    os.makedirs(project_dir)
+    os.environ["_PROJECT_DIR"] = project_dir
+    os.chdir(project_dir)
+    logger.info("project dir: %s", project_dir)
 
     ssh_client = SSHClient(project_config["ssh"])
     if not ssh_client.connect():
         logger.error("ssh connect error")
         all_pop()
         return False
-    dir_name = uuid.uuid4().hex
     project_dir = os.path.join(ssh_client.pwd(), dir_name)
     if project_config["os"] == "Linux":
         project_dir = project_dir.replace("\\", "/")
     else:
         project_dir = project_dir.replace("/", "\\")
     os.environ["_PROJECT_DIR_REMOTE"] = project_dir
-    os.environ["_PROJECT_DIR"] = os.path.abspath(dir_name)
-    logger.info("project dir: %s", project_dir)
 
-    os.makedirs(dir_name)
-    os.chdir(dir_name)
+    if "env" in project_config:
+        for key, value in project_config["env"].items():
+            real_value = Template(value).render(os.environ)
+            os.environ[key] = real_value
+            logger.info("set env: %s = %s", key, real_value)
+
     vcs_config = project_config["vcs"]
 
     if "before" in project_config["vcs"]:
@@ -85,5 +91,6 @@ def remote_build(project_config):
     for item in project_config["scp"]:
         if not ssh_client.download_file(Template(item["remote"]).render(os.environ), Template(item["local"]).render(os.environ)):
             logger.error("download file error:%s", Template(item["remote"]).render(os.environ))
+            return False
     all_pop()
     return True
