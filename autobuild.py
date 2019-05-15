@@ -23,7 +23,7 @@ def main():
 
     file_formatter = logging.Formatter('[%(levelname)6s %(asctime)s %(module)20s:%(lineno)5d] --> %(message)s')
     file = logging.FileHandler(os.path.join(sln_dir, "build_error.log"))
-    file.setLevel(logging.DEBUG)
+    file.setLevel(logging.WARN)
     file.setFormatter(file_formatter)
     logger.addHandler(file)
 

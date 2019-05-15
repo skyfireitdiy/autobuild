@@ -44,26 +44,27 @@ def remote_build(project_config):
 
     vcs_config = project_config["vcs"]
 
-    if "before" in project_config["vcs"]:
-        before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
-        ret = subprocess.call([before_command])
-        if ret != 0:
+    if "skip" not in project_config["vcs"]:
+        if "before" in project_config["vcs"]:
+            before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
+            ret = subprocess.call([before_command])
+            if ret != 0:
+                all_pop()
+                logger.error("pre get code error")
+                return False
+
+        if not get_code(vcs_config):
+            logger.error("get code error")
             all_pop()
-            logger.error("pre get code error")
             return False
 
-    if not get_code(vcs_config):
-        logger.error("get code error")
-        all_pop()
-        return False
-
-    if "after" in project_config["vcs"]:
-        after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
-        ret = subprocess.call([after_command])
-        if ret != 0:
-            all_pop()
-            logger.error("post get code error")
-            return False
+        if "after" in project_config["vcs"]:
+            after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
+            ret = subprocess.call([after_command])
+            if ret != 0:
+                all_pop()
+                logger.error("post get code error")
+                return False
     logger.info("uploading project source ...")
     if not ssh_client.upload_file(os.path.join("..", dir_name), project_dir):
         logger.error("upload project source error: %s", os.path.join("..", dir_name))
