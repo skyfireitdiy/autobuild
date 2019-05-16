@@ -42,12 +42,18 @@ def remote_build(project_config):
             os.environ[key] = real_value
             logger.info("set env: %s = %s", key, real_value)
 
-    vcs_config = project_config["vcs"]
-
-    if "skip" not in project_config["vcs"]:
+    if "before" in project_config:
+        before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
+        ret = subprocess.call([before_command], shell=True, env=os.environ)
+        if ret != 0:
+            all_pop()
+            logger.error("pre build error")
+            return False
+    if "vcs" in project_config:
+        vcs_config = project_config["vcs"]
         if "before" in project_config["vcs"]:
             before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
-            ret = subprocess.call([before_command])
+            ret = subprocess.call([before_command], shell=True, env=os.environ)
             if ret != 0:
                 all_pop()
                 logger.error("pre get code error")
@@ -60,7 +66,7 @@ def remote_build(project_config):
 
         if "after" in project_config["vcs"]:
             after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
-            ret = subprocess.call([after_command])
+            ret = subprocess.call([after_command], shell=True, env=os.environ)
             if ret != 0:
                 all_pop()
                 logger.error("post get code error")
@@ -89,9 +95,19 @@ def remote_build(project_config):
         logger.error("Build error")
         all_pop()
         return False
+
     for item in project_config["scp"]:
         if not ssh_client.download_file(Template(item["remote"]).render(os.environ), Template(item["local"]).render(os.environ)):
             logger.error("download file error:%s", Template(item["remote"]).render(os.environ))
             return False
+
+    if "after" in project_config:
+        before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
+        ret = subprocess.call([before_command], shell=True, env=os.environ)
+        if ret != 0:
+            all_pop()
+            logger.error("pre build error")
+            return False
+
     all_pop()
     return True

@@ -14,6 +14,7 @@ from script_gen import generate_script
 
 
 def main():
+    start_time = datetime.datetime.now()
     all_push()
 
     sln_dir = os.path.abspath(datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S-build"))
@@ -40,6 +41,9 @@ def main():
 
     build_result = {}
 
+    if "skip" not in global_config:
+        global_config["skip"] = []
+
     if "env" in global_config:
         for key, value in global_config["env"].items():
             real_value = Template(value).render(os.environ)
@@ -48,7 +52,7 @@ def main():
 
     if "before" in global_config:
         before_command, _ = generate_script(global_config["before"], system_type, prefix="before_sln")
-        ret = subprocess.call([before_command])
+        ret = subprocess.call([before_command], shell=True, env=os.environ)
         if ret != 0:
             logger.error("prebuild error")
             return
@@ -56,12 +60,12 @@ def main():
     project_config = global_config["project"]
     for project_detail in project_config:
         project_name = project_detail["name"]
-        if "skip" in project_detail:
+        if project_name in global_config["skip"]:
             build_result[project_name] = 1
             continue
         if "before" in global_config:
             before_command, _ = generate_script(global_config["before"], system_type, prefix="before_%s" % project_name)
-            ret = subprocess.call([before_command])
+            ret = subprocess.call([before_command], shell=True, env=os.environ)
             if ret != 0:
                 build_result[project_name] = -1
                 logger.error("prebuild project error")
@@ -83,7 +87,7 @@ def main():
         if build_result[project_name] == 0:
             if "after" in global_config:
                 before_command, _ = generate_script(global_config["after"], system_type, prefix="after_%s" % project_name)
-                ret = subprocess.call([before_command])
+                ret = subprocess.call([before_command], shell=True, env=os.environ)
                 if ret != 0:
                     build_result[project_name] = -1
                     logger.error("postbuild project error")
@@ -91,7 +95,7 @@ def main():
 
     if "after" in global_config:
         before_command, _ = generate_script(global_config["after"], system_type, prefix="after_sln")
-        ret = subprocess.call([before_command])
+        ret = subprocess.call([before_command], shell=True, env=os.environ)
         if ret != 0:
             logger.error("postbuild error")
             return
@@ -104,7 +108,8 @@ def main():
         else:
             ret_str = "Failed"
         logger.info("%20s -> %10s" % (name, ret_str))
-
+    cost = (datetime.datetime.now()-start_time).seconds
+    logger.info("Time cost: %dm %ds" % (cost//60, cost % 60))
 
 if __name__ == "__main__":
     main()

@@ -25,12 +25,18 @@ def local_build(project_config):
             os.environ[key] = real_value
             logger.info("set env: %s = %s", key, real_value)
 
-    vcs_config = project_config["vcs"]
-
-    if "skip" not in project_config["vcs"]:
+    if "before" in project_config:
+        before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
+        ret = subprocess.call([before_command], shell=True, env=os.environ)
+        if ret != 0:
+            all_pop()
+            logger.error("pre build error")
+            return False
+    if "vcs" in project_config:
+        vcs_config = project_config["vcs"]
         if "before" in project_config["vcs"]:
             before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
-            ret = subprocess.call([before_command])
+            ret = subprocess.call([before_command], shell=True, env=os.environ)
             if ret != 0:
                 all_pop()
                 logger.error("pre get code error")
@@ -43,21 +49,30 @@ def local_build(project_config):
 
         if "after" in project_config["vcs"]:
             after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
-            ret = subprocess.call([after_command])
+            ret = subprocess.call([after_command], shell=True, env=os.environ)
             if ret != 0:
                 all_pop()
                 logger.error("post get code error")
                 return False
-    else:
-        logger.info("Skip get code ...")
 
     logger.info("generate build command file ...")
     build_cmd, _ = generate_script(project_config["build"], system_type, prefix="build")
     logger.info("start build ...")
-    ret = subprocess.call([build_cmd])
+    logger.info(build_cmd)
+    
+    ret = subprocess.call([build_cmd], shell=True, env=os.environ)
     if ret != 0:
         logger.error("Build error")
         all_pop()
         return False
+
+    if "after" in project_config:
+        before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
+        ret = subprocess.call([before_command], shell=True, env=os.environ)
+        if ret != 0:
+            all_pop()
+            logger.error("pre build error")
+            return False
+
     all_pop()
     return True
