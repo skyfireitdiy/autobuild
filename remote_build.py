@@ -96,9 +96,11 @@ def remote_build(project_config):
         all_pop()
         return False
 
-    for item in project_config["scp"]:
-        if not ssh_client.download_file(Template(item["remote"]).render(os.environ), Template(item["local"]).render(os.environ)):
-            logger.error("download file error:%s", Template(item["remote"]).render(os.environ))
+    for remote,local in project_config["scp"].items():
+        remote_path = Template(remote).render(os.environ)
+        local_path = Template(local).render(os.environ)
+        if not ssh_client.download_file(remote_path, local_path):
+            logger.error("download file error:%s", remote_path)
             return False
 
     if "after" in project_config:

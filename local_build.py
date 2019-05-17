@@ -54,12 +54,12 @@ def local_build(project_config):
                 all_pop()
                 logger.error("post get code error")
                 return False
+    else:
+        logger.info("Skip get code ...")
 
     logger.info("generate build command file ...")
     build_cmd, _ = generate_script(project_config["build"], system_type, prefix="build")
     logger.info("start build ...")
-    logger.info(build_cmd)
-    
     ret = subprocess.call([build_cmd], shell=True, env=os.environ)
     if ret != 0:
         logger.error("Build error")
