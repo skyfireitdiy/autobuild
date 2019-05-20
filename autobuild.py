@@ -61,7 +61,7 @@ def main():
         build_result[name] = 1
     for project_name in global_config["build"]:
         project_detail = project_detail = global_config["project"][project_name]
-        if project_detail["type"] == "local":
+        if "type" not in project_detail or project_detail["type"] == "local":
             logger.info("local build %s ...", project_name)
             if local_build(project_detail):
                 build_result[project_name] = 0

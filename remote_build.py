@@ -76,32 +76,34 @@ def remote_build(project_config):
         logger.error("upload project source error: %s", os.path.join("..", dir_name))
         all_pop()
         return False
-
-    logger.info("generate build command file ...")
-    build_cmd, local_file = generate_script(project_config["build"], project_config["os"], remote=True, prefix="build")
-    if not ssh_client.upload_file(local_file, build_cmd):
-        logger.error("upload build script error")
-        all_pop()
-        return False
-
-    if project_config["os"] == "Linux":
-        if ssh_client.run_command("chmod +x \"" + build_cmd + "\"") != 0:
-            logger.error("chmod error")
+    
+    if "build" in project_config:
+        logger.info("generate build command file ...")
+        build_cmd, local_file = generate_script(project_config["build"], project_config["os"], remote=True, prefix="build")
+        if not ssh_client.upload_file(local_file, build_cmd):
+            logger.error("upload build script error")
             all_pop()
             return False
 
-    logger.info("start build ...")
-    if ssh_client.run_command(build_cmd) != 0:
-        logger.error("Build error")
-        all_pop()
-        return False
+        if project_config["os"] == "Linux":
+            if ssh_client.run_command("chmod +x \"" + build_cmd + "\"") != 0:
+                logger.error("chmod error")
+                all_pop()
+                return False
 
-    for remote,local in project_config["scp"].items():
-        remote_path = Template(remote).render(os.environ)
-        local_path = Template(local).render(os.environ)
-        if not ssh_client.download_file(remote_path, local_path):
-            logger.error("download file error:%s", remote_path)
+        logger.info("start build ...")
+        if ssh_client.run_command(build_cmd) != 0:
+            logger.error("Build error")
+            all_pop()
             return False
+
+    if "scp" in project_config:
+        for remote,local in project_config["scp"].items():
+            remote_path = Template(remote).render(os.environ)
+            local_path = Template(local).render(os.environ)
+            if not ssh_client.download_file(remote_path, local_path):
+                logger.error("download file error:%s", remote_path)
+                return False
 
     if "after" in project_config:
         before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
