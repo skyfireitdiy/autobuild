@@ -67,14 +67,16 @@ def main():
                 build_result[project_name] = 0
             else:
                 build_result[project_name] = -1
-                continue
+                if "stop_on_error" not in global_config or global_config["stop_on_error"]:
+                    break
         else:
             logger.info("remote build %s ...", project_name)
             if remote_build(project_detail):
                 build_result[project_name] = 0
             else:
                 build_result[project_name] = -1
-                continue
+                if "stop_on_error" not in global_config or global_config["stop_on_error"]:
+                    break
 
     if "after" in global_config:
         before_command, _ = generate_script(global_config["after"], system_type, prefix="after_sln")

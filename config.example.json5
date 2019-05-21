@@ -7,6 +7,8 @@
   build: [
     // 这里可以指定编译的列表，不在此列表的项目将被忽略
   ],
+  // 发生错误时是否立即停止编译，可选，默认为true
+  stop_on_error: false,
   // 工程列表，必需，每个元素表示一个工程配置
   project: {
     // 工程名称对应工程配置
@@ -38,7 +40,7 @@
         // 在拉取代码后需要执行的命令行、可选
         after: ["echo after get code", "echo get code finished"]
       },
-      // 编译命令，必需
+      // 编译命令，可选，没有此字段则默认此过程成功
       build: [
         "cd Example1",
         "cmake .",
