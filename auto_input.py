@@ -32,4 +32,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("参数错误\n python auto_input.py WindowTitle Text\n")
 
-    auto_input(sys.argv[1], sys.argv[2])
+    auto_input(sys.argv[1], sys.argv[2]+'\r')
