@@ -63,7 +63,7 @@ def main():
         project_detail = project_detail = global_config["project"][project_name]
         if "type" not in project_detail or project_detail["type"] == "local":
             logger.info("local build %s ...", project_name)
-            if local_build(project_detail):
+            if local_build(project_name, project_detail):
                 build_result[project_name] = 0
             else:
                 build_result[project_name] = -1
@@ -71,7 +71,7 @@ def main():
                     break
         else:
             logger.info("remote build %s ...", project_name)
-            if remote_build(project_detail):
+            if remote_build(project_name, project_detail):
                 build_result[project_name] = 0
             else:
                 build_result[project_name] = -1

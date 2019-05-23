@@ -11,9 +11,9 @@ from ssh import SSHClient
 from vcs import get_code
 
 
-def remote_build(project_config):
+def remote_build(name, project_config):
     all_push()
-    dir_name = uuid.uuid4().hex
+    dir_name = name + "_" + uuid.uuid4().hex
     project_dir = os.path.abspath(dir_name)
     if system_type == "Linux":
         project_dir = project_dir.replace("\\", "/")

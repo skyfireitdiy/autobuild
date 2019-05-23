@@ -8,9 +8,9 @@ from script_gen import generate_script
 import subprocess
 
 
-def local_build(project_config):
+def local_build(name, project_config):
     all_push()
-    project_dir = os.path.abspath(uuid.uuid4().hex)
+    project_dir = os.path.abspath(name + "_" + uuid.uuid4().hex)
     if system_type == "Linux":
         project_dir = project_dir.replace("\\", "/")
     else:

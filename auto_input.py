@@ -31,5 +31,15 @@ def auto_input(window_title, text):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("参数错误\n python auto_input.py WindowTitle Text\n")
-
-    auto_input(sys.argv[1], sys.argv[2]+'\r')
+        print(len(sys.argv))
+        print(sys.argv)
+    print("This is auto input Tool, close it after finished !")
+    while True:
+        try:
+            auto_input(sys.argv[1], sys.argv[2]+'\r')
+        except KeyboardInterrupt:
+            print("Exit!")
+            break
+        except:
+            print("Exception!")
+            continue

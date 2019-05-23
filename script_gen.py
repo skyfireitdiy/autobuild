@@ -7,14 +7,14 @@ from logger import logger
 
 def generate_script(command_list, system_type, remote=False, prefix=""):
     if system_type == "Windows":
-        command = "@echo off\n"
+        command = "@echo off\r\n"
         if remote and "_PROJECT_DIR_REMOTE" in os.environ:
-            command += "cd \"" + os.environ["_PROJECT_DIR_REMOTE"] + "\"\n"
+            command += "cd \"" + os.environ["_PROJECT_DIR_REMOTE"] + "\"\r\n"
         elif "_PROJECT_DIR" in os.environ:
-            command += "cd \"" + os.environ["_PROJECT_DIR"] + "\"\n"
+            command += "cd \"" + os.environ["_PROJECT_DIR"] + "\"\r\n"
         for cmd in command_list:
-            command += Template(cmd).render(os.environ) + "\n"
-            command += "if not %errorlevel%==0 exit %errorlevel%\n"
+            command += Template(cmd).render(os.environ) + "\r\n"
+            command += "if not %errorlevel%==0 exit %errorlevel%\r\n"
         cmd_file = prefix + "_" + uuid.uuid4().hex + ".bat"
         if remote and "_PROJECT_DIR_REMOTE" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR_REMOTE"], cmd_file).replace("/", "\\")
@@ -38,9 +38,11 @@ def generate_script(command_list, system_type, remote=False, prefix=""):
             full_path = os.path.join(os.environ["_PROJECT_DIR"], cmd_file).replace("\\", "/")
         else:
             full_path = os.path.abspath(cmd_file).replace("\\", "/")
-
     with open(cmd_file, "wb") as fp:
-        fp.write(command.encode("utf-8"))
+        if system_type == "Windows":
+            fp.write(command.encode('gbk'))
+        else:
+            fp.write(command.encode('utf-8'))
     logger.info("generate cmd file:%s", cmd_file)
 
     return full_path, cmd_file
