@@ -58,7 +58,7 @@ def local_build(name, project_config):
         logger.info("Skip get code ...")
     if "build" in project_config:
         logger.info("generate build command file ...")
-        build_cmd, _ = generate_script(project_config["build"], system_type, prefix="build")
+        build_cmd, _ = generate_script(project_config["build"], system_type, prefix="clean")
         logger.info("start build ...")
         ret = subprocess.call([build_cmd], shell=True, env=os.environ)
         if ret != 0:

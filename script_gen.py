@@ -18,6 +18,8 @@ def generate_script(command_list, system_type, remote=False, prefix=""):
         cmd_file = prefix + "_" + uuid.uuid4().hex + ".bat"
         if remote and "_PROJECT_DIR_REMOTE" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR_REMOTE"], cmd_file).replace("/", "\\")
+        elif remote and "_REMOTE_ROOT" in os.environ:
+            full_path = os.path.join(os.environ["_REMOTE_ROOT"], cmd_file).replace("/", "\\")
         elif "_PROJECT_DIR" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR"], cmd_file).replace("/", "\\")
         else:
@@ -34,6 +36,8 @@ def generate_script(command_list, system_type, remote=False, prefix=""):
         cmd_file = prefix + "_" + uuid.uuid4().hex + ".sh"
         if remote and "_PROJECT_DIR_REMOTE" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR_REMOTE"], cmd_file).replace("\\", "/")
+        elif remote and "_REMOTE_ROOT" in os.environ:
+            full_path = os.path.join(os.environ["_REMOTE_ROOT"], cmd_file).replace("\\", "/")
         elif "_PROJECT_DIR" in os.environ:
             full_path = os.path.join(os.environ["_PROJECT_DIR"], cmd_file).replace("\\", "/")
         else:

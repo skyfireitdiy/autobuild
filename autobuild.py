@@ -11,6 +11,8 @@ from local_build import local_build
 from logger import logger
 from remote_build import remote_build
 from script_gen import generate_script
+from local_clean import local_clean
+from remote_clean import remote_clean
 
 
 def main():
@@ -21,12 +23,6 @@ def main():
     os.makedirs(sln_dir)
     os.environ["_SLN_DIR"] = sln_dir
     os.chdir(sln_dir)
-
-    file_formatter = logging.Formatter('[%(levelname)6s %(asctime)s %(module)20s:%(lineno)5d] --> %(message)s')
-    file = logging.FileHandler(os.path.join(sln_dir, "build_error.log"))
-    file.setLevel(logging.WARN)
-    file.setFormatter(file_formatter)
-    logger.addHandler(file)
 
     if system_type == "Windows":
         logger.info("os : Windows")
@@ -84,7 +80,14 @@ def main():
         if ret != 0:
             logger.error("postbuild error")
             return
-    all_reset()
+    os.chdir(os.path.join(sln_dir,".."))
+    if "clean" in global_config:
+        for clean_config in global_config["clean"]:
+            if "type" not in clean_config or clean_config["type"] == "local":
+                local_clean(clean_config)
+            else:
+                remote_clean(clean_config)
+            
     for name, result in build_result.items():
         if result == 0:
             ret_str = "Succeed"
@@ -95,6 +98,7 @@ def main():
         logger.info("%20s -> %10s" % (name, ret_str))
     cost = (datetime.datetime.now()-start_time).seconds
     logger.info("Time cost: %dm %ds" % (cost//60, cost % 60))
+    all_reset()
 
 if __name__ == "__main__":
     main()

@@ -29,7 +29,9 @@ def remote_build(name, project_config):
         logger.error("ssh connect error")
         all_pop()
         return False
-    project_dir = os.path.join(ssh_client.pwd(), dir_name)
+    remote_root = ssh_client.pwd()
+    os.environ["_REMOTE_ROOT"] = remote_root
+    project_dir = os.path.join(remote_root, dir_name)
     if project_config["os"] == "Linux":
         project_dir = project_dir.replace("\\", "/")
     else:
@@ -76,7 +78,7 @@ def remote_build(name, project_config):
         logger.error("upload project source error: %s", os.path.join("..", dir_name))
         all_pop()
         return False
-    
+
     if "build" in project_config:
         logger.info("generate build command file ...")
         build_cmd, local_file = generate_script(project_config["build"], project_config["os"], remote=True, prefix="build")
