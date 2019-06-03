@@ -70,5 +70,23 @@
   // 所有工程构建前执行的命令
   before: ["echo before build solution"],
   // 所有工程构建完成后执行的命令
-  after: ["echo after build solution"]
+  after: ["echo after build solution"],
+  // 构建完成后的一些清理工作，比如删除临时文件等
+  clean: [
+    {
+      // 类型，可选remote或者local，默认local
+      type: "remote",
+      // 如果type是remote，指定ssh连接信息
+      ssh: {
+        host: "192.168.1.2",
+        port: "22",
+        username: "root",
+        password: "password"
+      },
+      // 如果type为remote，指定远程主机类型，Windows或者Linux
+      os: "Linux",
+      // 清理命令
+      cmd: ["rm -rf /tmp/my_project"]
+    }
+  ]
 }
