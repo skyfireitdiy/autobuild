@@ -26,7 +26,8 @@ def local_build(name, project_config):
             logger.info("set env: %s = %s", key, real_value)
 
     if "before" in project_config:
-        before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
+        before_command, _ = generate_script(
+            project_config["before"], system_type, prefix="before_build")
         ret = subprocess.call([before_command], shell=True, env=os.environ)
         if ret != 0:
             all_pop()
@@ -35,7 +36,8 @@ def local_build(name, project_config):
     if "vcs" in project_config:
         vcs_config = project_config["vcs"]
         if "before" in project_config["vcs"]:
-            before_command, _ = generate_script(project_config["vcs"]["before"], system_type, prefix="before_get_code")
+            before_command, _ = generate_script(
+                project_config["vcs"]["before"], system_type, prefix="before_get_code")
             ret = subprocess.call([before_command], shell=True, env=os.environ)
             if ret != 0:
                 all_pop()
@@ -48,7 +50,8 @@ def local_build(name, project_config):
             return False
 
         if "after" in project_config["vcs"]:
-            after_command, _ = generate_script(project_config["vcs"]["after"], system_type, prefix="after_get_code")
+            after_command, _ = generate_script(
+                project_config["vcs"]["after"], system_type, prefix="after_get_code")
             ret = subprocess.call([after_command], shell=True, env=os.environ)
             if ret != 0:
                 all_pop()
@@ -58,7 +61,8 @@ def local_build(name, project_config):
         logger.info("Skip get code ...")
     if "build" in project_config:
         logger.info("generate build command file ...")
-        build_cmd, _ = generate_script(project_config["build"], system_type, prefix="clean")
+        build_cmd, _ = generate_script(
+            project_config["build"], system_type, prefix="build")
         logger.info("start build ...")
         ret = subprocess.call([build_cmd], shell=True, env=os.environ)
         if ret != 0:
@@ -67,7 +71,8 @@ def local_build(name, project_config):
             return False
 
     if "after" in project_config:
-        before_command, _ = generate_script(project_config["before"], system_type, prefix="before_build")
+        before_command, _ = generate_script(
+            project_config["before"], system_type, prefix="before_build")
         ret = subprocess.call([before_command], shell=True, env=os.environ)
         if ret != 0:
             all_pop()
