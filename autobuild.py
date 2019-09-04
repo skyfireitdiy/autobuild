@@ -6,7 +6,7 @@ import argparse
 
 from jinja2 import Template
 
-from build_config import global_config, load_config
+from build_config import load_config
 from env import all_push, all_reset, system_type
 from local_build import local_build
 from logger import logger
@@ -18,15 +18,17 @@ from remote_clean import remote_clean
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('config_file', type=str, help='Config file name', default='config.json5')
+    parser.add_argument('config_file', type=str,
+                        help='Config file name', default='config.json5')
     args = parser.parse_args()
     config_file = args.config_file
-    load_config(config_file)
+    global_config = load_config(config_file)
 
     start_time = datetime.datetime.now()
     all_push()
 
-    sln_dir = os.path.abspath(datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S-build"))
+    sln_dir = os.path.abspath(
+        datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S-build"))
     os.makedirs(sln_dir)
     os.environ["_SLN_DIR"] = sln_dir
     os.chdir(sln_dir)
@@ -55,7 +57,8 @@ def main():
             logger.info("set env: %s = %s", key, real_value)
 
     if "before" in global_config:
-        before_command, _ = generate_script(global_config["before"], system_type, prefix="before_sln")
+        before_command, _ = generate_script(
+            global_config["before"], system_type, prefix="before_sln")
         ret = subprocess.call([before_command], shell=True, env=os.environ)
         if ret != 0:
             logger.error("prebuild error")
@@ -82,19 +85,20 @@ def main():
                     break
 
     if "after" in global_config:
-        before_command, _ = generate_script(global_config["after"], system_type, prefix="after_sln")
+        before_command, _ = generate_script(
+            global_config["after"], system_type, prefix="after_sln")
         ret = subprocess.call([before_command], shell=True, env=os.environ)
         if ret != 0:
             logger.error("postbuild error")
             return
-    os.chdir(os.path.join(sln_dir,".."))
+    os.chdir(os.path.join(sln_dir, ".."))
     if "clean" in global_config:
         for clean_config in global_config["clean"]:
             if "type" not in clean_config or clean_config["type"] == "local":
                 local_clean(clean_config)
             else:
                 remote_clean(clean_config)
-            
+
     for name, result in build_result.items():
         if result == 0:
             ret_str = "Succeed"
@@ -106,6 +110,7 @@ def main():
     cost = (datetime.datetime.now()-start_time).seconds
     logger.info("Time cost: %dm %ds" % (cost//60, cost % 60))
     all_reset()
+
 
 if __name__ == "__main__":
     main()
