@@ -2,10 +2,11 @@ import logging
 import os
 import datetime
 import subprocess
+import argparse
 
 from jinja2 import Template
 
-from build_config import global_config
+from build_config import global_config, load_config
 from env import all_push, all_reset, system_type
 from local_build import local_build
 from logger import logger
@@ -16,6 +17,12 @@ from remote_clean import remote_clean
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_file', type=str, help='Config file name', default='config.json5')
+    args = parser.parse_args()
+    config_file = args.config_file
+    load_config(config_file)
+
     start_time = datetime.datetime.now()
     all_push()
 

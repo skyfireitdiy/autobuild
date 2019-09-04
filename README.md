@@ -2,6 +2,18 @@
 
 适合中小项目的 python 自动化编译工具
 
+## 依赖安装
+
+```bash
+pip install -r requirements.txt --user
+```
+
+在 windows 环境下使用还需要安装 pywin32
+
+```bash
+pip install pywin32 --user
+```
+
 ## 模块划分
 
 - 主模块（`autobuild.py`）
@@ -12,7 +24,7 @@
 
   用于加载编译配置
 
-- 版本控制模块（`cvs.py`）
+- 版本控制模块（`vcs.py`）
   用于版本控制，拉取代码
 - 环境变量控制系统 （`env.py`）
 
